@@ -30,6 +30,7 @@ void spiBang(unsigned char byte);
 void display(unsigned short number);
 void clearDisplay(void);
 short readADC(unsigned short);
+interrupt(TIMERA1_VECTOR) serviceTimerA(void);
 
 unsigned long ticks;
 
@@ -37,7 +38,9 @@ int main(void)
 {
         initialise();
 
-        unsigned long nextRefreshTime = 0, hsStart = 0;
+        unsigned long nextRefreshTime;
+        unsigned long hsStart;
+        nextRefreshTime = hsStart = 0;
         unsigned short isTiming = false, stopCounts = 0, hsTime = 0;
         unsigned short ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
 
@@ -73,7 +76,6 @@ int main(void)
 
                 LPM1; // Put the device into sleep mode 1
         }
-        return 0;
 }
 
 /**
