@@ -16,6 +16,13 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/* TODO list:
+ * BJT to switch power to accelerometer and display, switch off after inactivity to conserve power.
+ * In screensaver mode reduce sample rate
+ * Hysteresis in accel - ie 2 thresholds, one rising, one falling. This removes the stopCounts etc.
+ */
+
 #include <msp430x20x2.h>
 #include <signal.h>
 #include "config.h"
