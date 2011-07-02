@@ -8,7 +8,7 @@ SIZE            := $(CROSS)size
 LD              := $(CC)
 MSPDEBUG        := mspdebug
 LDFLAGS         := -mmcu=$(TARGETMCU)
-CFLAGS          := -Os -Wall -W -Wextra -Werror -g -mmcu=$(TARGETMCU)
+CFLAGS          := -Os -Wall -W -Wextra -Werror -g -mmcu=$(TARGETMCU) -std=gnu99
 
 ifneq ($(WITH_CXX),)
 	CC      := $(CXX)
@@ -18,7 +18,7 @@ endif
 ifneq ($(DEBUG),)
 	ifeq ($(WITH_CXX),)
 	CFLAGS  += -Wstrict-prototypes -Wmissing-prototypes -Wbad-function-cast
-	CFLAGS  += -Werror-implicit-function-declaration -Wdeclaration-after-statement
+	CFLAGS  += -Werror-implicit-function-declaration 
 	CFLAGS  += -Wnested-externs -Wold-style-definition
 	CFLAGS  += -finline-functions
 endif
