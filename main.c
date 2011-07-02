@@ -20,10 +20,6 @@
 #include <signal.h>
 #include "config.h"
 
-#include <msp430x20x2.h>
-#include <signal.h>
-#include "config.h"
-
 #define true 1
 #define false 0
 
@@ -32,6 +28,7 @@
 void initialise(void);
 void spiBang(unsigned char byte);
 void display(unsigned short number);
+void clearDisplay(void);
 short readADC(unsigned short);
 
 unsigned long ticks;
@@ -42,6 +39,7 @@ int main(void)
 
         unsigned long nextRefreshTime = 0, hsStart = 0;
         unsigned short isTiming = false, stopCounts = 0, hsTime = 0;
+        unsigned short ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
 
         for (;;) {
                 if (ticks >= nextRefreshTime) {
@@ -54,16 +52,23 @@ int main(void)
                                 if (!isTiming) {
                                         isTiming = true;
                                         hsStart = ticks;
+                                        ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
                                 }
                                 hsTime = (unsigned short) ((ticks - hsStart) / 100);
                         } else {
                                 stopCounts++;
                                 if (isTiming && stopCounts > STOPTIME/REFRESH_HZ) {
                                         isTiming = false;
+                                        ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
                                 }
                         } 
 
-                        display(hsTime);
+                        if (ssTimeout == 0) {
+                                clearDisplay();
+                        } else {
+                                display(hsTime);
+                                ssTimeout--;
+                        }
                 }
 
                 LPM1; // Put the device into sleep mode 1
@@ -98,10 +103,9 @@ void initialise(void)
         P1DIR &= ~( ADCPIN ); // Set input pins
         ADC10AE0 |= ADCPIN; // Enable ADC
 
-        /* Reset and clear the display of any decomal points */
+        /* Reset and clear the display */
         spiBang(RESET);
-        spiBang(DECIMAL);
-        spiBang(DECIMAL2);
+        clearDisplay();
 
         ticks = 0;
 
@@ -139,6 +143,10 @@ void display(unsigned short number)
                 }
 
                 spiBang(RESET);
+
+                spiBang(DECIMAL); // Display the decimal point
+                spiBang(DECIMAL2);
+
                 if (first == 0) {
                         spiBang(' ');
                 } else {
@@ -157,6 +165,20 @@ void display(unsigned short number)
                 spiBang(fourth);
         }
         lastNumber = number;
+}
+
+/**
+ * Clears the display
+ */
+void clearDisplay(void)
+{
+        spiBang(RESET);
+        spiBang(' ');
+        spiBang(' ');
+        spiBang(' ');
+        spiBang(' ');
+        spiBang(DECIMAL);
+        spiBang(0);
 }
 
 /**

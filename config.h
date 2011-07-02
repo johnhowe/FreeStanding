@@ -1,14 +1,13 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#include <msp430x20x2.h>
-
 #define RED_LED         BIT0
 #define GREEN_LED       BIT6
 
 #define REFRESH_HZ              50      // Main loop frequency
-#define STARTSTOP_THRESH        350     // Angle to start timing
+#define STARTSTOP_THRESH        400     // Angle to start timing
 #define STOPTIME                200     // "Debouncing" when coming down from HS
+#define SCREENSAVER_TIME        300     // Seconds before clearing the display (to conserve power)
 
 #define ADCPIN          INCH_7
 #define WBO2_PIN        ADCPIN
