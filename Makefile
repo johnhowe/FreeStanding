@@ -6,10 +6,10 @@ OBJS 	= main.o
 
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) -o handstandman.elf $(OBJS)
+	$(CC) $(CFLAGS) -o freestanding.elf $(OBJS)
 
 install: all
-	mspdebug rf2500 "prog handstandman.elf"
+	mspdebug rf2500 "prog freestanding.elf"
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -18,6 +18,6 @@ erase:
 	mspdebug rf2500 "erase"
 
 clean:
-	rm -fr handstandman.elf $(OBJS)
+	rm -fr freestanding.elf $(OBJS)
 
 
