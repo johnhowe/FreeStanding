@@ -6,7 +6,7 @@ OBJS 	= main.o
 
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) -o freestanding.elf $(OBJS)
+	$(CC) $(CFLAGS) -o freestanding.elf $(OBJS) -T msp430x2231.x
 
 install: all
 	mspdebug rf2500 "prog freestanding.elf"
