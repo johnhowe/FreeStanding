@@ -9,30 +9,30 @@
 #define STOPTIME                200     // "Debouncing" when coming down from HS
 #define SCREENSAVER_TIME        300     // Seconds before clearing the display (to conserve power)
 
-#define ADCPIN          INCH_7
-#define WBO2_PIN        ADCPIN
+#define ADCPIN                  INCH_7
+#define ACCEL_PIN               INCH_2
 
 /* SPI pins */
-#define CS_PIN          BIT3        // Chip select
-#define MOSI_PIN        BIT4        // Master out, slave in
-#define CLK_PIN         BIT5        // Clock
+#define CS_PIN                  BIT3        // Chip select
+#define MOSI_PIN                BIT4        // Master out, slave in
+#define CLK_PIN                 BIT5        // Clock
 
 /* LCD Commands */
-#define DECIMAL         (0x77)      // Follow with a decimal point command
-#define BRIGHTNESS      (0x7a)      // Follow with a value from 0 to 254. Stored into non-volatile memory
-#define RESET           (0x76)      // Clear display and set cursor to first digit
-#define DIGIT1          (0x7b)
-#define DIGIT2          (0x7c)
-#define DIGIT3          (0x7d)
-#define DIGIT4          (0x7e)
+#define DECIMAL                 (0x77)      // Follow with a decimal point command
+#define BRIGHTNESS              (0x7a)      // Follow with a value from 0 to 254. Stored into non-volatile memory
+#define RESET                   (0x76)      // Clear display and set cursor to first digit
+#define DIGIT1                  (0x7b)
+#define DIGIT2                  (0x7c)
+#define DIGIT3                  (0x7d)
+#define DIGIT4                  (0x7e)
 
 /* Decimal points */
-#define DECIMAL0        (1<<0)
-#define DECIMAL1        (1<<1)
-#define DECIMAL2        (1<<2)
-#define DECIMAL3        (1<<3)
-#define COLON           (1<<4)
-#define APOSTROPHE      (1<<5)
+#define DECIMAL0                (1<<0)
+#define DECIMAL1                (1<<1)
+#define DECIMAL2                (1<<2)
+#define DECIMAL3                (1<<3)
+#define COLON                   (1<<4)
+#define APOSTROPHE              (1<<5)
 
 #endif
 

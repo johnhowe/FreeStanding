@@ -1,5 +1,5 @@
 /**
- *   FreeStanding, a handstand timer for an MSP430.
+ *   FreeStanding, a handstand timer using an MSP430.
  *   Copyright (C) 2011, John Howe
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -108,9 +108,10 @@ void initialise(void)
 
         /* Initialise I/O ports */
         P1OUT = 0;
-        P1DIR |= ( RED_LED | GREEN_LED | CS_PIN | MOSI_PIN | CLK_PIN ); // Set output pins
+        P1DIR |= ( RED_LED | GREEN_LED | CS_PIN | MOSI_PIN | CLK_PIN | ACCEL_PIN ); // Set output pins
         P1DIR &= ~( ADCPIN ); // Set input pins
         ADC10AE0 |= ADCPIN; // Enable ADC
+        P1OUT |= ACCEL_PIN; // Power on the accelerometer
 
         /* Reset and clear the display */
         spiBang(RESET);
