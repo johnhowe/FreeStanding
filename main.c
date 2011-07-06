@@ -55,7 +55,7 @@ int main(void)
                 if (ticks >= nextRefreshTime) {
                         nextRefreshTime += TICK_HZ / REFRESH_HZ;
 
-                        short accel = readADC(ADCPIN);
+                        short accel = readADC(ACCEL_ADC);
 
                         if (accel < STARTSTOP_THRESH) {
                                 stopCounts = 0;
@@ -74,10 +74,12 @@ int main(void)
                         } 
 
                         if (ssTimeout == 0) {
-                                clearDisplay();
+                                //clearDisplay();
+                                //P1OUT &= ~DISP_PWR; 
                         } else {
                                 display(hsTime);
                                 ssTimeout--;
+                                //P1OUT |= DISP_PWR;           
                         }
                 }
 
@@ -108,18 +110,23 @@ void initialise(void)
 
         /* Initialise I/O ports */
         P1OUT = 0;
-        P1DIR |= ( RED_LED | GREEN_LED | CS_PIN | MOSI_PIN | CLK_PIN | ACCEL_PIN ); // Set output pins
-        P1DIR &= ~( ADCPIN ); // Set input pins
-        ADC10AE0 |= ADCPIN; // Enable ADC
-        P1OUT |= ACCEL_PIN; // Power on the accelerometer
+        P1DIR |= ( CS_PIN | MOSI_PIN | CLK_PIN | ACCEL_PWR | DISP_PWR ); // Set output pins
+        P1DIR &= ~( ACCEL_ADC ); // Set input pins
+        ADC10AE0 |= ACCEL_ADC; // Enable ADC
+        P1OUT |= ACCEL_PWR | DISP_PWR; // Power on the accelerometer and display
+        /// @TODO This may need some dead time here to allow the devices to power up
 
-        /* Reset and clear the display */
-        spiBang(RESET);
+        _BIS_SR(GIE); // Global interrupt enable
+
+        // Delay a specified period of time to allow the peripheral devices to power up
+        short delay = STARTUP_DELAY;
+        while (--delay) {
+                LPM1; 
+        }
+
         clearDisplay();
 
         ticks = 0;
-
-        _BIS_SR(GIE); // Global interrupt enable
 }
 
 /**
@@ -188,7 +195,10 @@ void clearDisplay(void)
         spiBang(' ');
         spiBang(' ');
         spiBang(DECIMAL);
-        spiBang(0);
+        spiBang(0); 
+
+        spiBang(BRIGHTNESS);
+        spiBang(0xff);
 }
 
 /**
@@ -198,8 +208,6 @@ void clearDisplay(void)
  */
 void spiBang(unsigned char byte) 
 {
-        // Just a status LED
-        P1OUT |= GREEN_LED;           
         // Enable the SPI device
         P1OUT &= ~CS_PIN;
         // TX byte one bit at a time, starting with most significant bit
@@ -217,7 +225,6 @@ void spiBang(unsigned char byte)
                 P1OUT |= CLK_PIN;           
                 P1OUT &= ~CLK_PIN;        
         }   
-        P1OUT &= ~GREEN_LED;
         P1OUT |= CS_PIN;
 }
 
