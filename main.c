@@ -77,7 +77,9 @@ int main(void)
                                 //clearDisplay();
                                 //P1OUT &= ~DISP_PWR; 
                         } else {
-                                display(hsTime);
+                                if (hsTime > MIN_HS_TIME) {
+                                        display(hsTime);
+                                }
                                 ssTimeout--;
                                 //P1OUT |= DISP_PWR;           
                         }
