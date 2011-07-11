@@ -2,7 +2,7 @@
 #define _CONFIG_H_
 
 #define REFRESH_HZ              50      // Main loop frequency
-#define STARTSTOP_THRESH        400     // Angle to start timing
+#define STARTSTOP_THRESH        500     // Angle to start timing (higher number = less vertical)
 #define STOPTIME                200     // "Debouncing" when coming down from HS
 #define SCREENSAVER_TIME        300     // Seconds before clearing the display (to conserve power)
 #define STARTUP_DELAY           300     // Milliseconds for the device to allow other peripherals to startup
