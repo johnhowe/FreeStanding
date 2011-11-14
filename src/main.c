@@ -23,8 +23,10 @@
  * Hysteresis in accel - ie 2 thresholds, one rising, one falling. This removes the stopCounts etc.
  */
 
-#include <msp430x20x2.h>
-#include <signal.h>
+#include <msp430.h>
+#include <inttypes.h>
+#define interrupt(x) void __attribute__((interrupt (x))) 
+
 #include "config.h"
 
 #define true 1
