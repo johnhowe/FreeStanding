@@ -1,6 +1,8 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#define CALIBRATION_MODE
+
 #define REFRESH_HZ              50      // Main loop frequency
 #define STARTSTOP_THRESH        500     // Angle to start timing (higher number = less vertical)
 #define STOPTIME                200     // "Debouncing" when coming down from HS
@@ -10,7 +12,6 @@
 
 /* GPIO Pins */
 #define ACCEL_PWR               INCH_0  // Accelerometer power output
-#define DISP_PWR                INCH_1  // Display power output (to BJT)
 #define ACCEL_ADC               INCH_7  // Accelerometer analogue input
 /* SPI pins */
 #define CS_PIN                  BIT3    // Chip select
