@@ -18,21 +18,22 @@
 
 
 /* TODO list:
- * BJT to switch power to accelerometer and display, switch off after inactivity to conserve power.
- * In screensaver mode reduce sample rate
  * Hysteresis in accel - ie 2 thresholds, one rising, one falling. This removes the stopCounts etc.
  */
 
 #include <msp430x20x2.h>
-#include <inttypes.h>
-#define interrupt(x) void __attribute__((interrupt (x))) 
-
 #include "config.h"
+
+//In uniarch there is no more signal.h to sugar coat the interrupts definition, so we do it here
+#define interrupt(x) void __attribute__((interrupt (x)))
+
 
 #define true 1
 #define false 0
 
 #define TICK_HZ 1000
+
+#undef CALIBRATION_MODE
 
 void initialise(void);
 void spiBang(unsigned char byte);
@@ -51,7 +52,6 @@ int main(void)
         unsigned long hsStart;
         nextRefreshTime = hsStart = 0;
         unsigned short isTiming = false, stopCounts = 0, hsTime = 0;
-        unsigned short ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
 
         for (;;) {
                 if (ticks >= nextRefreshTime) {
@@ -64,27 +64,22 @@ int main(void)
                                 if (!isTiming) {
                                         isTiming = true;
                                         hsStart = ticks;
-                                        ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
                                 }
                                 hsTime = (unsigned short) ((ticks - hsStart) / 100);
                         } else {
                                 stopCounts++;
                                 if (isTiming && stopCounts > STOPTIME/REFRESH_HZ) {
                                         isTiming = false;
-                                        ssTimeout = SCREENSAVER_TIME * REFRESH_HZ;
                                 }
-                        } 
-
-                        if (ssTimeout == 0) {
-                                //clearDisplay();
-                                //P1OUT &= ~DISP_PWR; 
-                        } else {
-                                if (hsTime > MIN_HS_TIME) {
-                                        display(hsTime);
-                                }
-                                ssTimeout--;
-                                //P1OUT |= DISP_PWR;           
                         }
+
+#ifdef CALIBRATION_MODE
+                        display(accel);
+#else
+                        if (hsTime > MIN_HS_TIME) {
+                                display(hsTime);
+                        }
+#endif
                 }
 
                 LPM1; // Put the device into sleep mode 1
@@ -95,10 +90,10 @@ int main(void)
  * Configures the peripherals, clocks, timers, I/O ports, variables and clears
  * the display.
  */
-void initialise(void) 
+void initialise(void)
 {
         /* Stop watchdog timer */
-        WDTCTL = WDTPW + WDTHOLD; 
+        WDTCTL = WDTPW + WDTHOLD;
 
         /* Set internal clock frequency to 1MHz */
         DCOCTL = CALDCO_1MHZ;
@@ -114,10 +109,10 @@ void initialise(void)
 
         /* Initialise I/O ports */
         P1OUT = 0;
-        P1DIR |= ( CS_PIN | MOSI_PIN | CLK_PIN | ACCEL_PWR | DISP_PWR ); // Set output pins
+        P1DIR |= ( CS_PIN | MOSI_PIN | CLK_PIN | ACCEL_PWR ); // Set output pins
         P1DIR &= ~( ACCEL_ADC ); // Set input pins
         ADC10AE0 |= ACCEL_ADC; // Enable ADC
-        P1OUT |= ACCEL_PWR | DISP_PWR; // Power on the accelerometer and display
+        P1OUT |= ACCEL_PWR; // Power on the accelerometer and display
         /// @TODO This may need some dead time here to allow the devices to power up
 
         _BIS_SR(GIE); // Global interrupt enable
@@ -125,7 +120,7 @@ void initialise(void)
         // Delay a specified period of time to allow the peripheral devices to power up
         short delay = STARTUP_DELAY;
         while (--delay) {
-                LPM1; 
+                LPM1;
         }
 
         clearDisplay();
@@ -140,7 +135,7 @@ void initialise(void)
  * be sent to the display. Any decimal point needs to be managed elsewhere.
  * Leading zeroes aren't displayed.
  */
-void display(unsigned short number) 
+void display(unsigned short number)
 {
         static unsigned short lastNumber = 0;
         if (number != lastNumber) {
@@ -199,7 +194,7 @@ void clearDisplay(void)
         spiBang(' ');
         spiBang(' ');
         spiBang(DECIMAL);
-        spiBang(0); 
+        spiBang(0);
 
         spiBang(BRIGHTNESS);
         spiBang(0xff);
@@ -210,33 +205,36 @@ void clearDisplay(void)
  *
  * CPOL = 0, CPHA = 0
  */
-void spiBang(unsigned char byte) 
+void spiBang(unsigned char byte)
 {
         // Enable the SPI device
         P1OUT &= ~CS_PIN;
         // TX byte one bit at a time, starting with most significant bit
         short bit;
         for (bit = 0; bit < 8; bit++) {
-                if (byte & 0x80) { 
-                        P1OUT |= MOSI_PIN; 
+                if (byte & 0x80) {
+                        P1OUT |= MOSI_PIN;
                 }
                 else {
-                        P1OUT &= ~MOSI_PIN; 
+                        P1OUT &= ~MOSI_PIN;
                 }
-                // Drop the last bit 
+                // Drop the last bit
                 byte <<= 1;
                 // Slave latches on rising clock edge
-                P1OUT |= CLK_PIN;           
-                P1OUT &= ~CLK_PIN;        
-        }   
+                P1OUT |= CLK_PIN;
+                P1OUT &= ~CLK_PIN;
+        }
         P1OUT |= CS_PIN;
 }
 
 /**
  * Takes a single reading of a specified ADC pin
  */
-short readADC(unsigned short pin) 
+short readADC(unsigned short pin)
 {
+        const unsigned short siloLength = 4;
+        static long adcSilo = 0;
+
         ADC10CTL0 = ADC10ON + ADC10SHT_1 + SREF_0; // ACD10 on, 8 clock cycles per sample, Use Vcc/Vss references
         ADC10CTL1 = ADC10SSEL_0 + pin; // Select internal ADC clock (~5MHz) and Input channel (pin)
         ADC10CTL0 |= ENC + ADC10SC; // enable and start conversion
@@ -245,8 +243,13 @@ short readADC(unsigned short pin)
         }
         ADC10CTL0 &= ~(ADC10IFG +ENC); // disable conversion and clear flag
 
-        short adcReading = ADC10MEM;
-        return adcReading;
+        short adcSample = ADC10MEM;
+
+
+        short adcSmooth = adcSilo >> siloLength;
+        adcSilo = adcSilo - adcSmooth + adcSample;
+
+        return adcSmooth;
 }
 
 
@@ -254,7 +257,7 @@ short readADC(unsigned short pin)
 /* Interrupt service routines */
 /******************************/
 
-interrupt(TIMERA1_VECTOR) serviceTimerA(void) 
+interrupt(TIMERA1_VECTOR) serviceTimerA(void)
 {
         // Clear TimerA interrupt flag
         TACTL &= ~TAIFG;
