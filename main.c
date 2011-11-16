@@ -24,7 +24,9 @@
  */
 
 #include <msp430x20x2.h>
-#include <signal.h>
+#include <inttypes.h>
+#define interrupt(x) void __attribute__((interrupt (x))) 
+
 #include "config.h"
 
 #define true 1
