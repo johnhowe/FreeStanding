@@ -1,4 +1,4 @@
-TARGETMCU       ?= msp430x2231
+TARGETMCU       ?= msp430g2231
 
 CROSS           := msp430-
 CC              := $(CROSS)gcc
