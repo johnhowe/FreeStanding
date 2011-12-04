@@ -33,7 +33,7 @@
 
 #define TICK_HZ 1000
 
-#define CALIBRATION_MODE
+#undef CALIBRATION_MODE
 
 void initialise(void);
 void spiBang(unsigned char byte);
@@ -232,6 +232,9 @@ void spiBang(unsigned char byte)
  */
 short readADC(unsigned short pin)
 {
+        const unsigned short siloLength = 4;
+        static long adcSilo = 0;
+
         ADC10CTL0 = ADC10ON + ADC10SHT_1 + SREF_0; // ACD10 on, 8 clock cycles per sample, Use Vcc/Vss references
         ADC10CTL1 = ADC10SSEL_0 + pin; // Select internal ADC clock (~5MHz) and Input channel (pin)
         ADC10CTL0 |= ENC + ADC10SC; // enable and start conversion
@@ -240,8 +243,13 @@ short readADC(unsigned short pin)
         }
         ADC10CTL0 &= ~(ADC10IFG +ENC); // disable conversion and clear flag
 
-        short adcReading = ADC10MEM;
-        return adcReading;
+        short adcSample = ADC10MEM;
+
+
+        short adcSmooth = adcSilo >> siloLength;
+        adcSilo = adcSilo - adcSmooth + adcSample;
+
+        return adcSmooth;
 }
 
 

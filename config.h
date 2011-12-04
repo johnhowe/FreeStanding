@@ -8,7 +8,7 @@
 #define STOPTIME                200     // "Debouncing" when coming down from HS
 #define SCREENSAVER_TIME        300     // Seconds before clearing the display (to conserve power)
 #define STARTUP_DELAY           300     // Milliseconds for the device to allow other peripherals to startup
-#define MIN_HS_TIME             5       // Minimum length of time of a handstand in tenths of seconds. This is to prevent a score being lost when banging the accelerometer (when coming down from a handstand for eg.)
+#define MIN_HS_TIME             0       // Minimum length of time of a handstand in tenths of seconds. This is to prevent a score being lost when banging the accelerometer (when coming down from a handstand for eg.)
 
 /* GPIO Pins */
 #define ACCEL_PWR               INCH_0  // Accelerometer power output
